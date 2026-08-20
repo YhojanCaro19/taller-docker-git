@@ -1,0 +1,19 @@
+name: escenario4-cicd-ejercicio
+
+services:
+  app:
+    build: .
+    container_name: cicd_app_ej
+    restart: always
+    ports:
+      - "${APP_PORT}:3000"
+    environment:
+      PORT: 3000
+      APP_VERSION: ${APP_VERSION}
+      ENTORNO: development
+    healthcheck:
+      test: ["CMD", "python", "healthcheck.py"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s

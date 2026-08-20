@@ -1,0 +1,20 @@
+name: escenario4-cicd-prod
+
+# Usa la imagen ya publicada por el pipeline de CI/CD (DockerHub o GHCR),
+# en vez de construirla localmente. Requiere DOCKERHUB_USERNAME en .env.
+services:
+  app:
+    image: ${DOCKERHUB_USERNAME}/app-cicd-ejercicio:latest
+    container_name: cicd_app_prod_ej
+    restart: always
+    ports:
+      - "${APP_PORT}:3000"
+    environment:
+      PORT: 3000
+      ENTORNO: production
+    healthcheck:
+      test: ["CMD", "python", "healthcheck.py"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
