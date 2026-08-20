@@ -1,0 +1,75 @@
+name: escenario3-redis-ejercicio
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache_ej
+    restart: always
+    ports:
+      - "${REDIS_HOST_PORT}:6379"
+    volumes:
+      - redis_data_ej:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - redis_network_ej
+
+  db:
+    image: postgres:15-alpine
+    container_name: redis_postgres_ej
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_HOST_PORT}:5432"
+    volumes:
+      - pg_data_ej:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - redis_network_ej
+
+  app:
+    build: ./app
+    container_name: redis_app_ej
+    restart: always
+    ports:
+      - "${APP_PORT}:8000"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - redis_network_ej
+
+volumes:
+  redis_data_ej:
+  pg_data_ej:
+
+networks:
+  redis_network_ej:
+    driver: bridge

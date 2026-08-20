@@ -1,0 +1,11 @@
+# Se aplica automáticamente en desarrollo (docker compose up sin -f adicional).
+# Agrega hot-reload montando el código como volumen, sin tocar la imagen "de producción"
+# que arma docker-compose.yml solo. Para levantar el modo producción (sin este override),
+# usar: docker compose -f docker-compose.yml up -d --build
+services:
+  app:
+    volumes:
+      - ./app:/app
+    environment:
+      DEBUG: "true"
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
