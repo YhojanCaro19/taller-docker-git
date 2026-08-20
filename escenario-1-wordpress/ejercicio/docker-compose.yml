@@ -1,3 +1,4 @@
+name: escenario1-wordpress-ejercicio
 services:
   db:
     image: mariadb:10.11
