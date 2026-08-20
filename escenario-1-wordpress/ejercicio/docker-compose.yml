@@ -1,0 +1,53 @@
+services:
+  db:
+    image: mariadb:10.11
+    container_name: wordpress_db_ej
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mi_wordpress_data:/var/lib/mysql
+    networks:
+      - mi_red_wordpress
+
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress_app_ej
+    restart: always
+    ports:
+      - "${WORDPRESS_PORT}:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - wp_app_data:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - mi_red_wordpress
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin_ej
+    restart: always
+    ports:
+      - "${PHPMYADMIN_PORT}:80"
+    environment:
+      PMA_HOST: db
+    depends_on:
+      - db
+    networks:
+      - mi_red_wordpress
+
+volumes:
+  mi_wordpress_data:
+  wp_app_data:
+
+networks:
+  mi_red_wordpress:
+    driver: bridge
