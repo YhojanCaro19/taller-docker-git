@@ -1,4 +1,4 @@
-version: '3.8'
+name: escenario1-wordpress-ejemplo
 services:
   db:
     image: mysql:8.0
