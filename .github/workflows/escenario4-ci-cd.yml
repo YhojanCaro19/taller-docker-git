@@ -47,6 +47,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
     steps:
       - name: Checkout del codigo
         uses: actions/checkout@v4
@@ -102,11 +104,11 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Metadata DockerHub
-        if: ${{ secrets.DOCKERHUB_USERNAME != '' }}
+        if: ${{ env.DOCKERHUB_USERNAME != '' }}
         id: meta-dockerhub
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/app-cicd-ejercicio
+          images: ${{ env.DOCKERHUB_USERNAME }}/app-cicd-ejercicio
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -114,14 +116,14 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Login a DockerHub
-        if: github.event_name != 'pull_request' && secrets.DOCKERHUB_USERNAME != ''
+        if: github.event_name != 'pull_request' && env.DOCKERHUB_USERNAME != ''
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: ${{ env.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build y Push a DockerHub
-        if: github.event_name != 'pull_request' && secrets.DOCKERHUB_USERNAME != ''
+        if: github.event_name != 'pull_request' && env.DOCKERHUB_USERNAME != ''
         uses: docker/build-push-action@v5
         with:
           context: escenario-4-cicd/ejercicio
