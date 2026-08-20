@@ -13,6 +13,11 @@ services:
       - mi_wordpress_data:/var/lib/mysql
     networks:
       - mi_red_wordpress
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   wordpress:
     image: wordpress:latest
@@ -28,9 +33,16 @@ services:
     volumes:
       - wp_app_data:/var/www/html
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - mi_red_wordpress
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/80' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
@@ -41,9 +53,16 @@ services:
     environment:
       PMA_HOST: db
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - mi_red_wordpress
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/80' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
 volumes:
   mi_wordpress_data:
